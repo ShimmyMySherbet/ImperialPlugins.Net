@@ -46,7 +46,6 @@ namespace ImperialPlugins.Models.Helpers
                     var err = JsonConvert.DeserializeObject<IPErrorResponse>(reader.ReadToEnd());
                     if (err.Error != null)
                     {
-                        Debug.WriteLine("Throwing IP Error");
                         throw new ImperialPluginsException(err.Error, ex);
                     }
                 }
