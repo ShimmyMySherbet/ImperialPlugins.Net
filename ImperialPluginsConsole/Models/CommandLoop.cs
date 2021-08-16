@@ -28,6 +28,10 @@ namespace ImperialPluginsConsole.Models
                 {
                     cmd.Execute(m_Out);
                 }
+                catch(NotLoggedInException)
+                {
+                    m_Out.WriteLine("Error: You need to be logged in to use this command", ConsoleColor.Red);
+                }
                 catch (MissingArgumentException m)
                 {
                     m_Out.Write("Missing required argument: ", ConsoleColor.Red);

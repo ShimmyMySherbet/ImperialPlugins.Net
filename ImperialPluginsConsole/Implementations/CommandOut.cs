@@ -5,17 +5,23 @@ namespace ImperialPluginsConsole.Implementations
 {
     public class CommandOut : ICommandOut
     {
-        public void Write(string message, params object[] args)
+        public void Write(object message, params object[] args)
         {
-            Console.Write(string.Format(message, args: args));
+            var msg = message.ToString();
+            if (msg == null) return;
+
+            Console.Write(string.Format(msg, args: args));
         }
 
-        public void Write(string message, ConsoleColor color, params object[] args)
+        public void Write(object message, ConsoleColor color, params object[] args)
         {
+            var msg = message.ToString();
+            if (msg == null) return;
+
             var prev = Console.ForegroundColor;
 
             Console.ForegroundColor = color;
-            Console.Write(string.Format(message, args: args));
+            Console.Write(string.Format(msg, args: args));
             Console.ForegroundColor = prev;
         }
 
@@ -24,17 +30,22 @@ namespace ImperialPluginsConsole.Implementations
             Console.WriteLine();
         }
 
-        public void WriteLine(string message, params object[] args)
+        public void WriteLine(object message, params object[] args)
         {
-            Console.WriteLine(string.Format(message, args: args));
+            var msg = message.ToString();
+            if (msg == null) return;
+            Console.WriteLine(string.Format(msg, args: args));
         }
 
-        public void WriteLine(string message, ConsoleColor color, params object[] args)
+        public void WriteLine(object message, ConsoleColor color, params object[] args)
         {
+            var msg = message.ToString();
+            if (msg == null) return;
+
             var prev = Console.ForegroundColor;
 
             Console.ForegroundColor = color;
-            Console.WriteLine(string.Format(message, args: args));
+            Console.WriteLine(string.Format(msg, args: args));
             Console.ForegroundColor = prev;
         }
     }

@@ -2,6 +2,7 @@
 using ImperialPluginsConsole.Models;
 using ImperialPluginsConsole.Models.Attributes;
 using System;
+using System.Linq;
 
 namespace ImperialPluginsConsole.Commands
 {
@@ -34,16 +35,16 @@ namespace ImperialPluginsConsole.Commands
                 cmdOut.WriteLine("Available Commands: ");
                 var first = true;
 
-                foreach (var cmd in commands)
+                foreach (var cmd in commands.Where(x => x.Pattern.Weight == 1 && x.Pattern.Weight != 0))
                 {
                     if (first)
                     {
-                        cmdOut.Write(cmd.Name, ConsoleColor.Green);
+                        cmdOut.Write(cmd.Pattern, ConsoleColor.Green);
                         first = false;
                     }
                     else
                     {
-                        cmdOut.Write(", {0}", ConsoleColor.Green, cmd.Name);
+                        cmdOut.Write(", {0}", ConsoleColor.Green, cmd.Pattern);
                     }
                 }
                 cmdOut.WriteLine();

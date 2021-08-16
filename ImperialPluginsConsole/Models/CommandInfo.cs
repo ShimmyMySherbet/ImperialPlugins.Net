@@ -5,14 +5,15 @@ namespace ImperialPluginsConsole.Models
     public struct CommandInfo
     {
         public Type CommandType;
-        public string Name;
+        public CommandPattern Pattern;
         public string Syntax;
         public string Dexcription;
 
-        public CommandInfo(Type commandType, string name, string syntax, string dexcription)
+
+        public CommandInfo(Type commandType, CommandPattern patten, string syntax, string dexcription)
         {
             CommandType = commandType;
-            Name = name;
+            Pattern = patten;
             Syntax = syntax;
             Dexcription = dexcription;
         }
