@@ -1,6 +1,7 @@
 ﻿using ImperialPlugins.Models;
 using ImperialPlugins.Models.API;
 using ImperialPlugins.Models.Coupons;
+using ImperialPlugins.Models.Exceptions;
 using ImperialPlugins.Models.Files;
 using ImperialPlugins.Models.Helpers;
 using ImperialPlugins.Models.Internals;
@@ -70,6 +71,11 @@ namespace ImperialPlugins
                 SessionCredentials = credentials;
                 Session = GetSession();
                 return true;
+            }
+            catch (ImperialPluginsException)
+            {
+                IsLoggedIn = false;
+                return false;
             }
             catch (WebException)
             {

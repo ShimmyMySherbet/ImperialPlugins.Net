@@ -64,7 +64,7 @@ namespace ImperialPlugins.Models
             return Client.LoginCallback(new IPSessionCredentials(APIKey));
         }
 
-
+        [Obsolete("Logging in with a username and password is no longer supported")]
         public bool Login(string username, string password)
         {
             m_state = CryptoHelper.GetRandomString(60);
