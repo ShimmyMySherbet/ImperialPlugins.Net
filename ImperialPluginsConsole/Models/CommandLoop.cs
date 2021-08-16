@@ -1,5 +1,8 @@
-﻿using ImperialPluginsConsole.Interfaces;
+﻿using ImperialPlugins.Models.Exceptions;
+using ImperialPluginsConsole.Interfaces;
 using ImperialPluginsConsole.Servicing.Interfaces;
+using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace ImperialPluginsConsole.Models
@@ -20,9 +23,32 @@ namespace ImperialPluginsConsole.Models
             while (true)
             {
                 var cmd = m_Reader.GetNextCommand();
+
                 try
                 {
                     cmd.Execute(m_Out);
+                }
+                catch (MissingArgumentException m)
+                {
+                    m_Out.Write("Missing required argument: ", ConsoleColor.Red);
+                    m_Out.WriteLine($"-{m.Argument}", ConsoleColor.Yellow);
+                }
+                catch (ImperialPluginsException ipError)
+                {
+                    m_Out.Write("Error running command: ", ConsoleColor.Red);
+                    m_Out.WriteLine("{0}", ConsoleColor.Yellow, ipError.Message);
+                    if (ipError.Errors != null)
+                    {
+                        foreach (var e in ipError.Errors)
+                        {
+                            m_Out.WriteLine("{0}", ConsoleColor.Yellow, e);
+                        }
+                    }
+                }
+                catch (WebException webex)
+                {
+                    m_Out.Write("Failiure running command: ", ConsoleColor.Red);
+                    m_Out.WriteLine("{0}", ConsoleColor.Yellow, webex.Message);
                 }
                 catch (TaskCanceledException)
                 {

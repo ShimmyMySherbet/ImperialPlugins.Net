@@ -34,7 +34,7 @@ namespace ImperialPluginsConsole.Commands
                 authPath = Path.Combine(basePath.FullName, "auth");
             }
 
-            if (m_Context.Arguments.Length == 0)
+            if (m_Context.Args.Length == 0)
             {
                 // auto login
 
@@ -86,9 +86,9 @@ namespace ImperialPluginsConsole.Commands
                     cmdOut.WriteLine("Auth cache file path error.");
                 }
             }
-            else if (m_Context.Arguments.Length == 1)
+            else if (m_Context.Args.Length == 1)
             {
-                var token = m_Context.Arguments[0];
+                var token = m_Context.Args[0];
                 cmdOut.WriteLine("Logging in...", ConsoleColor.Yellow);
 
                 if (m_ImperialPlugins.CreateLogin().Login(token))
@@ -106,8 +106,8 @@ namespace ImperialPluginsConsole.Commands
             }
             else
             {
-                var username = m_Context.Arguments[0];
-                var pass = m_Context.Arguments[1];
+                var username = m_Context.Args[0];
+                var pass = m_Context.Args[1];
                 cmdOut.WriteLine("Logging in...", ConsoleColor.Yellow);
 
                 if (m_ImperialPlugins.CreateLogin().Login(username, pass))

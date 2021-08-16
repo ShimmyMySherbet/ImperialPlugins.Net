@@ -1,8 +1,7 @@
 {
   "profiles": {
     "ImperialPluginsConsole": {
-      "commandName": "Project",
-      "commandLineArgs": "+Login +Session"
+      "commandName": "Project"
     }
   }
 }

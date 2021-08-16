@@ -33,9 +33,9 @@ namespace ImperialPluginsConsole.Commands
                 return;
             }
 
-            if (m_Context.Arguments.Length > 0)
+            if (m_Context.Args.Length > 0)
             {
-                var arg = m_Context.Arguments[0];
+                var arg = m_Context.Args[0];
                 if (arg.Equals("reload", StringComparison.InvariantCultureIgnoreCase))
                 {
                     cmdOut.WriteLine("Fetching session info...", ConsoleColor.Yellow);

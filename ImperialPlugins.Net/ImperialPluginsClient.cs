@@ -218,7 +218,6 @@ namespace ImperialPlugins
                 File = new IPFileData()
             };
 
-
             f.File.FileName = fileName;
             f.File.Base64 = "data:application/x-zip-compressed;base64," + Convert.ToBase64String(fileData);
 
@@ -261,82 +260,115 @@ namespace ImperialPlugins
         {
             ThrowHelper.ThrowIfNotLoggedIn();
             EnsureEndpoint(ref endpoint);
-            HttpWebRequest request = CreateWebRequest(endpoint, "GET");
-            string jsval = request.ReadString(out _);
-            if (typeof(T) == typeof(NoReturn)) return default;
-            if (jsval is T c)
-                return c;
-            else
+            try
             {
-                T r = JsonConvert.DeserializeObject<T>(jsval);
-                if (r is IPObject obj)
+                HttpWebRequest request = CreateWebRequest(endpoint, "GET");
+                string jsval = request.ReadString(out _);
+                if (typeof(T) == typeof(NoReturn)) return default;
+                if (jsval is T c)
+                    return c;
+                else
                 {
-                    obj.ImperialPlugins = this;
+                    T r = JsonConvert.DeserializeObject<T>(jsval);
+                    if (r is IPObject obj)
+                    {
+                        obj.ImperialPlugins = this;
+                    }
+                    return r;
                 }
-                return r;
+            }
+            catch (WebException wex)
+            {
+                ThrowHelper.ThrowIfIpEx(wex);
+                throw wex;
             }
         }
 
         public void BasicAPIOperation(string endpoint, string method)
         {
-            ThrowHelper.ThrowIfNotLoggedIn();
-            EnsureEndpoint(ref endpoint);
-            HttpWebRequest request = CreateWebRequest(endpoint, method);
-            request.GetResponse();
+            try
+            {
+                ThrowHelper.ThrowIfNotLoggedIn();
+                EnsureEndpoint(ref endpoint);
+                HttpWebRequest request = CreateWebRequest(endpoint, method);
+                request.GetResponse();
+            }
+            catch (WebException wex)
+            {
+                ThrowHelper.ThrowIfIpEx(wex);
+                throw wex;
+            }
         }
 
         public void BasicAPIOperation<T>(string endpoint, string method, T Payload)
         {
             ThrowHelper.ThrowIfNotLoggedIn();
             EnsureEndpoint(ref endpoint);
-            HttpWebRequest request = CreateWebRequest(endpoint, method);
-            string payload;
-            string type;
-            if (Payload is string pl)
+            try
             {
-                type = "plain/text";
-                payload = pl;
+                HttpWebRequest request = CreateWebRequest(endpoint, method);
+                string payload;
+                string type;
+                if (Payload is string pl)
+                {
+                    type = "plain/text";
+                    payload = pl;
+                }
+                else
+                {
+                    type = "application/json";
+                    payload = JsonConvert.SerializeObject(Payload);
+                }
+                request.WriteString(payload, type);
+                request.GetResponse();
             }
-            else
+            catch (WebException wex)
             {
-                type = "application/json";
-                payload = JsonConvert.SerializeObject(Payload);
+                ThrowHelper.ThrowIfIpEx(wex);
+                throw wex;
             }
-            request.WriteString(payload, type);
-            request.GetResponse();
         }
 
         public O BasicAPIOperation<T, O>(string endpoint, string method, T Payload)
         {
             ThrowHelper.ThrowIfNotLoggedIn();
             EnsureEndpoint(ref endpoint);
-            HttpWebRequest request = CreateWebRequest(endpoint, method);
-            string payload;
-            string type;
-            if (Payload is string pl)
-            {
-                type = "plain/text";
-                payload = pl;
-            }
-            else
-            {
-                type = "application/json";
-                payload = JsonConvert.SerializeObject(Payload);
-            }
-            request.WriteString(payload, type);
-            string response = request.ReadString(out _);
 
-            if (response is O t)
+            try
             {
-                return t;
-            }
-            {
-                O r = JsonConvert.DeserializeObject<O>(response);
-                if (r is IPObject obj)
+                HttpWebRequest request = CreateWebRequest(endpoint, method);
+                string payload;
+                string type;
+                if (Payload is string pl)
                 {
-                    obj.ImperialPlugins = this;
+                    type = "plain/text";
+                    payload = pl;
                 }
-                return r;
+                else
+                {
+                    type = "application/json";
+                    payload = JsonConvert.SerializeObject(Payload);
+                }
+                request.WriteString(payload, type);
+                string response = request.ReadString(out _);
+
+                if (response is O t)
+                {
+                    return t;
+                }
+                {
+                    O r = JsonConvert.DeserializeObject<O>(response);
+                    if (r is IPObject obj)
+                    {
+                        obj.ImperialPlugins = this;
+                    }
+                    return r;
+                }
+            }
+            catch (WebException ex)
+            {
+                ThrowHelper.ThrowIfIpEx(ex);
+                throw ex;
             }
         }
 
