@@ -1,10 +1,13 @@
 ﻿using ImperialPlugins;
+using ImperialPluginsConsole.Commands.Products;
 using ImperialPluginsConsole.Interfaces;
 using ImperialPluginsConsole.Models;
+using ImperialPluginsConsole.Models.Attributes;
 using System;
 
-namespace ImperialPluginsConsole.Commands
+namespace ImperialPluginsConsole.Commands.Products
 {
+    [CommandParent(typeof(ProductCommand))]
     public class UnblockProductCommand : ICommand
     {
         private readonly ImperialPluginsClient m_ImperialPlugins;

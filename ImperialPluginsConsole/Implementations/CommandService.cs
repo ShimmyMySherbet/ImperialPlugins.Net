@@ -5,6 +5,7 @@ using ImperialPluginsConsole.Servicing.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -18,6 +19,7 @@ namespace ImperialPluginsConsole.Implementations
 
         private List<CommandInfo> m_Commands = new List<CommandInfo>();
         private CommandInfo? m_DefaultCommand;
+        private CommandInfo? m_HelpCommand;
 
         public CommandService(IServiceContainer container, IActivator activator)
         {
@@ -45,9 +47,14 @@ namespace ImperialPluginsConsole.Implementations
 
                 m_Commands.Add(info);
 
-                if (Attribute.IsDefined(cmdType, typeof(DefaultCommand)))
+                if (cmdType.GetCustomAttribute<DefaultCommand>() != null)
                 {
                     m_DefaultCommand = info;
+                }
+
+                if (cmdType.GetCustomAttribute<HelpProvider>() != null)
+                {
+                    m_HelpCommand = info;
                 }
             }
         }
@@ -76,7 +83,13 @@ namespace ImperialPluginsConsole.Implementations
 
                     var context = new CommandContext(best.Info.Pattern.ToString(), remParam.ToArray());
 
-                    return (ICommand)m_Activator.ActivateType(best.Info.CommandType, context);
+                    var instance = (ICommand)m_Activator.ActivateType(best.Info.CommandType, context);
+
+                    if (remParam.Contains("-?") && m_HelpCommand != null)
+                    {
+                        return (ICommand)m_Activator.ActivateType(m_HelpCommand.Value.CommandType, context, instance, best.Info);
+                    }
+                    return instance;
                 }
             }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using ImperialPluginsConsole.Interfaces;
+using System.Collections.Generic;
 
 namespace ImperialPluginsConsole.Models
 {

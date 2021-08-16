@@ -3,6 +3,7 @@ using ImperialPluginsConsole.Servicing.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -130,14 +131,35 @@ namespace ImperialPluginsConsole.Servicing
 
         private bool HasType(Type t)
         {
+
             lock (m_TransientTypes)
             {
-                if (m_TransientTypes.Any(x => t.IsAssignableFrom(t))) return true;
+                if (m_TransientTypes.Any(x => t.IsAssignableFrom(x.ImplementationType)))
+                    return true;
             }
 
             lock (m_Singletons)
             {
-                if (m_Singletons.Any(x => t.IsAssignableFrom(t))) return true;
+                if (m_Singletons.Any(x => t.IsAssignableFrom(x.ImplementationType)))
+                    return true;
+            }
+
+            lock(m_HostedServices)
+            {
+                if (m_HostedServices.Any(x => t.IsAssignableFrom(x.ServiceType)))
+                    return true;
+            }
+
+            lock (m_NewHostedServices)
+            {
+                if (m_NewHostedServices.Any(x => t.IsAssignableFrom(x)))
+                    return true;
+            }
+
+            lock (m_NewSingletons)
+            {
+                if (m_NewSingletons.Any(x => t.IsAssignableFrom(x.ImplementationType)))
+                    return true;
             }
 
             return false;
@@ -152,7 +174,6 @@ namespace ImperialPluginsConsole.Servicing
         {
             var constructors = t.GetConstructors();
             var validConstructors = new List<ConstructorInfo>();
-
             foreach (var c in constructors)
             {
                 var param = c.GetParameters();
@@ -161,12 +182,16 @@ namespace ImperialPluginsConsole.Servicing
 
                 foreach (var p in param)
                 {
-                    if (!HasType(p.ParameterType) && !parameters.Any(x => p.ParameterType.IsAssignableFrom(x.GetType())))
+                    var hasType = HasType(p.ParameterType);
+                    var extraHasType = parameters.Any(x => p.ParameterType.IsAssignableFrom(x.GetType()));
+
+                    if (!hasType && !extraHasType)
                     {
                         canActivate = false;
                         break;
                     }
                 }
+
 
                 if (canActivate)
                 {
@@ -174,7 +199,10 @@ namespace ImperialPluginsConsole.Servicing
                 }
             }
 
+
             var ordered = validConstructors.OrderByDescending(x => x.GetParameters().Length).ToArray();
+
+     
 
             if (ordered.Length == 0)
             {
@@ -311,7 +339,7 @@ namespace ImperialPluginsConsole.Servicing
                 m_NewSingletons.RemoveAll(x => x.SpecifiedType == serviceType);
 
             lock (m_Singletons)
-                m_Singletons.RemoveAll(x => x.Type == serviceType);
+                m_Singletons.RemoveAll(x => x.ImplementationType == serviceType);
         }
 
         public T Resolve<T>()
