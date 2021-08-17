@@ -131,24 +131,24 @@ namespace ImperialPluginsConsole.Models
                 };
         }
 
-        public EnumerableResponse<IPUser> GetPlugins(int max = 20)
+        public EnumerableResponse<IPPlugin> GetPlugins(int max = 20)
         {
-            if (m_Users == null)
+            if (m_Plugins == null)
             {
                 m_WaitHandle.Wait();
             }
 
-            if (m_Users == null)
+            if (m_Plugins == null)
             {
-                return m_ImperialPlugins.GetUsers(max);
+                return m_ImperialPlugins.GetPlugins(max);
             }
 
-            lock (m_Users)
-                return new EnumerableResponse<IPUser>()
+            lock (m_Plugins)
+                return new EnumerableResponse<IPPlugin>()
                 {
-                    TotalCount = m_Users.TotalCount,
+                    TotalCount = m_Plugins.TotalCount,
                     ImperialPlugins = m_ImperialPlugins,
-                    Items = m_Users.Items.Take(max).ToArray()
+                    Items = m_Plugins.Items.Take(max).ToArray()
                 };
         }
 
