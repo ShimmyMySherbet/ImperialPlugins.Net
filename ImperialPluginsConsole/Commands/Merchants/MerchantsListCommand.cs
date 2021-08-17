@@ -5,7 +5,7 @@ using ImperialPluginsConsole.Models.Attributes;
 using System;
 using System.Text;
 
-namespace ImperialPluginsConsole.Commands
+namespace ImperialPluginsConsole.Commands.Merchants
 {
     [CommandParent(typeof(MerchantsCommand))]
     public class MerchantsListCommand : ICommand

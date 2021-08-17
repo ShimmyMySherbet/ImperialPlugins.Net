@@ -16,6 +16,8 @@ namespace ImperialPluginsConsole
             host.RegisterSingleton<ICommandService, CommandService>();
             host.RegisterSingleton<ICommandReader, ConsoleCommandReader>();
             host.RegisterSingleton<ImperialPluginsClient>();
+            host.RegisterSingleton<CacheClient>();
+
 
             host.RegisterTransient<ICommandOut, CommandOut>();
 

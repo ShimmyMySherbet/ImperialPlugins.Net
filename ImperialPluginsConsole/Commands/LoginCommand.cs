@@ -12,11 +12,13 @@ namespace ImperialPluginsConsole.Commands
     {
         private readonly CommandContext m_Context;
         private readonly ImperialPluginsClient m_ImperialPlugins;
+        private readonly CacheClient m_CacheClient;
 
-        public LoginCommand(CommandContext context, ImperialPluginsClient imperialPlugins)
+        public LoginCommand(CommandContext context, ImperialPluginsClient imperialPlugins, CacheClient cacheClient)
         {
             m_Context = context;
             m_ImperialPlugins = imperialPlugins;
+            m_CacheClient = cacheClient;
         }
 
         public string Name => "Login";
@@ -46,11 +48,14 @@ namespace ImperialPluginsConsole.Commands
 
                         if (data.Length == 1)
                         {
+                            cmdOut.WriteLine("Logging in...", ConsoleColor.Green);
+
                             var apiKey = data[0];
 
                             if (m_ImperialPlugins.CreateLogin().Login(apiKey))
                             {
                                 cmdOut.WriteLine("Logged in.", ConsoleColor.Green);
+                                m_CacheClient.StartInit();
                             }
                             else
                             {
@@ -98,6 +103,7 @@ namespace ImperialPluginsConsole.Commands
                     {
                         File.WriteAllLines(authPath, new string[] { token });
                     }
+                    m_CacheClient.StartInit();
                 }
                 else
                 {

@@ -188,6 +188,12 @@ namespace ImperialPlugins
             return BasicAPIOperation<t_ApiKeyModel, APIKey>("/ApiKeys", "POST", key);
         }
 
+        public EnumerableResponse<IPPlugin> GetPlugins(int max = 100) => BasicAPICall<EnumerableResponse<IPPlugin>>($"/Products?MaxResultCount={max}");
+
+        public EnumerableResponse<IPPlugin> GetMerchantPlugins(string merchantID, int max = 100) => BasicAPICall<EnumerableResponse<IPPlugin>>($"/Products?MaxResultCount={max}&MerchantIds={WebUtility.UrlEncode(merchantID)}");
+
+        public EnumerableResponse<IPPlugin> GetOwnPlugins(int max = 100) => GetMerchantPlugins(Session.UserID, max);
+
         public APIKey RenameAPIkey(int id, string name)
         {
             t_ApiKeyModel key = new t_ApiKeyModel() { name = name };

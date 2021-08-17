@@ -1,29 +1,28 @@
 ﻿using ImperialPlugins;
-using ImperialPluginsConsole.Commands.Products;
 using ImperialPluginsConsole.Interfaces;
 using ImperialPluginsConsole.Models;
 using ImperialPluginsConsole.Models.Attributes;
 using System;
 
-namespace ImperialPluginsConsole.Commands.Products
+namespace ImperialPluginsConsole.Commands.Licences
 {
-    [CommandParent(typeof(ProductCommand))]
-    public class UnblockProductCommand : ICommand
+    [CommandParent(typeof(LicencesCommand))]
+    public class UnblockLicenceCommand : ICommand
     {
+        public string Name => "Unblock";
+
+        public string Syntax => "[-l LicenceKey]";
+
+        public string Description => "Unblocks a licence key";
+
         private readonly ImperialPluginsClient m_ImperialPlugins;
         private readonly CommandContext m_Context;
 
-        public UnblockProductCommand(ImperialPluginsClient imperialPlugins, CommandContext context)
+        public UnblockLicenceCommand(ImperialPluginsClient imperialPlugins, CommandContext context)
         {
             m_ImperialPlugins = imperialPlugins;
             m_Context = context;
         }
-
-        public string Name => "UnblockProduct";
-
-        public string Syntax => "UnblockProduct -l [LicenceKey]";
-
-        public string Description => "Unblocks a licence key";
 
         public void Execute(ICommandOut cmdOut)
         {

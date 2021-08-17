@@ -12,7 +12,7 @@ namespace ImperialPlugins.Models.Plugins
         public string CategoryName;
         public string ShortDescription;
         public string IconUrl;
-        public int ParentCategoryId;
+        public int? ParentCategoryId;
         public int ID;
 
         [JsonIgnore]

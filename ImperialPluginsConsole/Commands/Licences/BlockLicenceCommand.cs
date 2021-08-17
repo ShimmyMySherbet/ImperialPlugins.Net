@@ -1,25 +1,24 @@
 ﻿using ImperialPlugins;
-using ImperialPluginsConsole.Commands.Products;
 using ImperialPluginsConsole.Interfaces;
 using ImperialPluginsConsole.Models;
 using ImperialPluginsConsole.Models.Attributes;
 using System;
 
-namespace ImperialPluginsConsole.Commands.Products
+namespace ImperialPluginsConsole.Commands.Licences
 {
-    [CommandParent(typeof(ProductCommand))]
-    public class BlockProductCommand : ICommand
+    [CommandParent(typeof(LicencesCommand))]
+    public class BlockLicenceCommand : ICommand
     {
+        public string Name => "Block";
+
+        public string Syntax => "[-l LicenceKey] [-r Reason]";
+
+        public string Description => "Blocks a licence key with the specified reason";
+
         private readonly ImperialPluginsClient m_ImperialPlugins;
         private readonly CommandContext m_Context;
 
-        public string Name => "Block";
-
-        public string Syntax => "-l [Licence] -r [Reason]";
-
-        public string Description => "Blocks a licence key for the specified reason";
-
-        public BlockProductCommand(ImperialPluginsClient imperialPlugins, CommandContext context)
+        public BlockLicenceCommand(ImperialPluginsClient imperialPlugins, CommandContext context)
         {
             m_ImperialPlugins = imperialPlugins;
             m_Context = context;

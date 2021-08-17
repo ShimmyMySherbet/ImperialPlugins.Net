@@ -20,6 +20,7 @@ namespace ImperialPlugins.Models
 
                 if (typeof(IPObject).IsAssignableFrom(typeof(T)))
                 {
+                    if (Items == null) return;
                     foreach (var item in Items)
                     {
                         if (item is IPObject ipo) ipo.ImperialPlugins = value;

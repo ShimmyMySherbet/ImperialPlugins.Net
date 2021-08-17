@@ -1,7 +1,7 @@
 ﻿using ImperialPluginsConsole.Interfaces;
 using System;
 
-namespace ImperialPluginsConsole.Commands
+namespace ImperialPluginsConsole.Commands.Merchants
 {
     public class MerchantsCommand : ICommand
     {

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Text;
 
 namespace ImperialPluginsConsole.Models
 {
@@ -31,6 +33,68 @@ namespace ImperialPluginsConsole.Models
             {
                 return "No Content";
             }
+        }
+
+        public static string Pad(this string input, int padTo)
+        {
+            var inlen = 0;
+            var b = new StringBuilder();
+            if (input != null)
+            {
+                inlen = input.Length;
+                b.Append(input);
+            }
+
+            var paddingNeeded = padTo - inlen;
+
+            if (paddingNeeded <= 0)
+            {
+                return b.ToString();
+            }
+
+            for (int i = 0; i < paddingNeeded; i++)
+            {
+                b.Append(' ');
+            }
+            return b.ToString();
+        }
+
+        public static string Pad(this char padChar, int filled, int padTo)
+        {
+            var b = new StringBuilder();
+
+            var paddingNeeded = padTo - filled;
+
+            if (paddingNeeded <= 0)
+            {
+                return b.ToString();
+            }
+
+            for (int i = 0; i < paddingNeeded; i++)
+            {
+                b.Append(' ');
+            }
+            return b.ToString();
+        }
+
+
+        public static IEnumerable<T> Limit<T>(this IEnumerable<T> inp, int limit)
+        {
+            var ot = new List<T>();
+            var took = 0;
+            using(var e = inp.GetEnumerator())
+            {
+                while(e.MoveNext())
+                {
+                    took++;
+                    ot.Add(e.Current);
+                    if (took >= limit)
+                    {
+                        return ot;
+                    }
+                }
+            }
+            return ot;
         }
     }
 }
