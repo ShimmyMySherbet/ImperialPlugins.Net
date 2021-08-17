@@ -53,7 +53,6 @@ namespace ImperialPluginsConsole.Models
                 {
                     m_Users = m_ImperialPlugins.GetUsers(100000);
                     Debug.WriteLine($"Loaded {m_Users.TotalCount} users");
-
                 }
                 catch (Exception ex)
                 {
@@ -71,7 +70,6 @@ namespace ImperialPluginsConsole.Models
                 {
                     m_Plugins = m_ImperialPlugins.GetPlugins(1000);
                     Debug.WriteLine($"Loaded {m_Plugins.TotalCount} plugins");
-
                 }
                 catch (Exception ex)
                 {
@@ -83,11 +81,10 @@ namespace ImperialPluginsConsole.Models
                 }
             });
 
-
             m_WaitHandle.Activate();
         }
 
-        public EnumerableResponse<PluginRegistration> GetRegistrations(int max = 20)
+        public EnumerableResponse<PluginRegistration> GetRegistrations(int max = 20, bool refresh = false)
         {
             if (m_Registrations == null)
             {
@@ -97,6 +94,11 @@ namespace ImperialPluginsConsole.Models
             if (m_Registrations == null)
             {
                 return m_ImperialPlugins.GetRegistrations(max);
+            }
+
+            if (refresh)
+            {
+                m_Registrations = m_ImperialPlugins.GetRegistrations(1000);
             }
 
             lock (m_Registrations)
@@ -128,8 +130,6 @@ namespace ImperialPluginsConsole.Models
                     Items = m_Users.Items.Take(max).ToArray()
                 };
         }
-
-
 
         public EnumerableResponse<IPUser> GetPlugins(int max = 20)
         {
@@ -187,7 +187,6 @@ namespace ImperialPluginsConsole.Models
 
             return usr;
         }
-
 
         public IPPlugin? GetPluginByName(string name)
         {

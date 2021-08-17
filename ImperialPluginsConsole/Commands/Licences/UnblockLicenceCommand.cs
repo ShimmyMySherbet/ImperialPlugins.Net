@@ -38,6 +38,7 @@ namespace ImperialPluginsConsole.Commands.Licences
             }
 
             m_ImperialPlugins.UnblockProduct(licence);
+            cmdOut.WriteLine("Licence Unblocked.", ConsoleColor.Green);
         }
     }
 }

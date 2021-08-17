@@ -31,7 +31,7 @@ namespace ImperialPluginsConsole.Implementations
 
                 }
 
-                m_Out.Write("> ", ConsoleColor.Green);
+                m_Out.Write(" > ", ConsoleColor.Green);
                 var ln = Console.ReadLine();
 
                 if (ln == null)

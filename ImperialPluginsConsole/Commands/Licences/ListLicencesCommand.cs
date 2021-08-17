@@ -6,7 +6,6 @@ using ImperialPluginsConsole.Models;
 using ImperialPluginsConsole.Models.Attributes;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ImperialPluginsConsole.Commands.Licences
 {
@@ -15,7 +14,7 @@ namespace ImperialPluginsConsole.Commands.Licences
     {
         public string Name => "List";
 
-        public string Syntax => "[-l Limit] [-b|-blocked] [-a|active] [-r|refunded] [-u (user)] [-uid (UserID)] [-p (plugin)] [-pid pluginID]";
+        public string Syntax => "[-l Limit] [-b|-blocked] [-a|active] [-r|refunded] [-s|special] [-u (user)] [-uid (UserID)] [-p (plugin)] [-pid pluginID] [-ol|OmitLicence] [-fr|ForceRefresh]";
 
         public string Description => "Lists Licences";
 
@@ -37,6 +36,7 @@ namespace ImperialPluginsConsole.Commands.Licences
             var blocked = false;
             var active = false;
             var refunded = false;
+            var special = false;
 
             var hasUserFilter = false;
             string? user = null;
@@ -49,6 +49,12 @@ namespace ImperialPluginsConsole.Commands.Licences
             {
                 hasTypeFilters = true;
                 blocked = true;
+            }
+
+            if (args.ContainsKey("s"))
+            {
+                special = true;
+                hasTypeFilters = true;
             }
 
             if (args.ContainsKey("a"))
@@ -104,12 +110,17 @@ namespace ImperialPluginsConsole.Commands.Licences
                         continue;
                     }
 
-                    if (pl.IsBlocked && !blocked)
+                    if (pl.IsBlocked && !blocked && !pl.SpecialLicence)
                     {
                         continue;
                     }
 
                     if (pl.RefundTime != null && !refunded)
+                    {
+                        continue;
+                    }
+
+                    if (pl.SpecialLicence && !special)
                     {
                         continue;
                     }
@@ -128,7 +139,6 @@ namespace ImperialPluginsConsole.Commands.Licences
                     }
                 }
 
-                
                 if (hasPluginFilter)
                 {
                     if (pluginID != null && pl.ProductID != pluginID)
@@ -152,13 +162,16 @@ namespace ImperialPluginsConsole.Commands.Licences
                 .WithIndependants("b", "a", "r")
                 .Parse();
 
+            bool showLicence = !args.ContainsKey("ol");
+            bool refresh = args.ContainsKey("fr");
+
             if (args.ContainsKey("l") && !int.TryParse(args["l"], out max))
             {
                 cmdOut.WriteLine("Error: Invalid limit", ConsoleColor.Red);
                 return;
             }
 
-            var registrations = m_Cache.GetRegistrations(1000);
+            var registrations = m_Cache.GetRegistrations(1000, refresh);
 
             var filtered = Filter(registrations, args);
 
@@ -184,8 +197,11 @@ namespace ImperialPluginsConsole.Commands.Licences
                     cmdOut.Write("{0}", ConsoleColor.Cyan, product.Name.Pad(20));
                 }
 
-                cmdOut.Write("Licence Key: ", ConsoleColor.Green);
-                cmdOut.Write(k.LicenseKey, ConsoleColor.Cyan);
+                if (showLicence)
+                {
+                    cmdOut.Write("Licence Key: ", ConsoleColor.Green);
+                    cmdOut.Write(k.LicenseKey, ConsoleColor.Cyan);
+                }
 
                 if (k.IsBlocked)
                 {

@@ -45,6 +45,7 @@ namespace ImperialPluginsConsole.Commands.Licences
             }
 
             m_ImperialPlugins.BlockProduct(licence, reason);
+            cmdOut.WriteLine("Licence Blocked.", ConsoleColor.Green);
         }
     }
 }

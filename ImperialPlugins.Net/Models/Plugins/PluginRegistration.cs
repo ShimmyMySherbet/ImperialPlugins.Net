@@ -24,6 +24,9 @@ namespace ImperialPlugins.Models.Plugins
         public int ID;
 
         [JsonIgnore]
+        public bool SpecialLicence => !IsActive && !IsBlocked && RefundTime == null;
+
+        [JsonIgnore]
         public ImperialPluginsClient ImperialPlugins { get; set; }
         public RefundVerifyToken Refund() => ImperialPlugins.RefundProduct(LicenseKey);
         public void BlockLicence(string reason) => ImperialPlugins.BlockProduct(LicenseKey, reason);
