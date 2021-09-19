@@ -13,6 +13,7 @@ using ImperialPlugins.Models.Service;
 using ImperialPlugins.Models.Users;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
 using System.Net;
 
 namespace ImperialPlugins
@@ -72,13 +73,15 @@ namespace ImperialPlugins
                 Session = GetSession();
                 return true;
             }
-            catch (ImperialPluginsException)
+            catch (ImperialPluginsException ex)
             {
+                Console.WriteLine($"IPError: {ex.Message} {string.Join(",", ex.Errors)}");
                 IsLoggedIn = false;
                 return false;
             }
-            catch (WebException)
+            catch (WebException ex)
             {
+                Console.WriteLine($"WebEx: {ex.Message}");
                 IsLoggedIn = false;
                 return false;
             }

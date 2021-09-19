@@ -1,4 +1,5 @@
 ﻿using ImperialPlugins;
+using ImperialPlugins.Models;
 using ImperialPluginsConsole.Interfaces;
 using ImperialPluginsConsole.Models;
 using System;
@@ -23,17 +24,47 @@ namespace ImperialPluginsConsole.Commands
 
         public string Name => "Login";
 
-        public string Syntax => "Login [(API Key)] | [(Username) (Password)]";
+        public string Syntax => "Login [(API Key)] | [(Username) (Password)] | [-h (.HAR file path)]";
 
-        public string Description => "Logs into the Imperial Plugins API";
+        public string Description => "Logs into the Imperial Plugins API\nIf no parameters are supplied, saved credentials are used instead.";
 
         public void Execute(ICommandOut cmdOut)
         {
+            var cArgs = m_Context.ArgumentParser.WithDependants("h").Parse();
+
             var basePath = new FileInfo(Assembly.GetExecutingAssembly().Location).Directory;
             string? authPath = null;
             if (basePath != null)
             {
                 authPath = Path.Combine(basePath.FullName, "auth");
+            }
+
+            if (cArgs.ContainsKey("h"))
+            {
+                var fileName = cArgs["h"];
+
+                if (!File.Exists(fileName))
+                {
+                    cmdOut.Write("Failed to login: HAR file does not exist", ConsoleColor.Red);
+                    return;
+                }
+
+                if (m_ImperialPlugins.CreateLogin().HarLogin(fileName))
+                {
+                    cmdOut.WriteLine("Logged in.", ConsoleColor.Green);
+                    m_CacheClient.StartInit();
+
+                    if (authPath != null)
+                    {
+                        File.WriteAllLines(authPath, new string[] { "-RAW", m_ImperialPlugins.SessionCredentials.Header, m_ImperialPlugins.SessionCredentials.AuthHeaderContent });
+                    }
+                    return;
+                }
+                else
+                {
+                    cmdOut.WriteLine("Login Failed using extraced credentials.", ConsoleColor.Red);
+                    return;
+                }
             }
 
             if (m_Context.Args.Length == 0)
@@ -71,6 +102,20 @@ namespace ImperialPluginsConsole.Commands
                             else
                             {
                                 cmdOut.WriteLine("Login Failed using saved account credentials.", ConsoleColor.Red);
+                            }
+                        }
+                        else if (data.Length == 3)
+                        {
+                            var rawheader = data[2];
+                            var cred = new IPSessionCredentials() { Header = data[1], AuthHeaderContent = data[2] };
+
+                            if (m_ImperialPlugins.CreateLogin().Login(cred))
+                            {
+                                cmdOut.WriteLine("Logged in.", ConsoleColor.Green);
+                            }
+                            else
+                            {
+                                cmdOut.WriteLine("Login Failed using saved credentials.", ConsoleColor.Red);
                             }
                         }
                         else

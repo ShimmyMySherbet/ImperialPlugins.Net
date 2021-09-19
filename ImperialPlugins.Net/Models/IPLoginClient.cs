@@ -1,8 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using ImperialPlugins.Crypto;
+using ImperialPlugins.Models.Har;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
 
 namespace ImperialPlugins.Models
 {
@@ -35,7 +37,6 @@ namespace ImperialPlugins.Models
 
             string html = request.ReadString(out HttpWebResponse response);
 
-
             HtmlDocument document = new HtmlDocument();
             document.LoadHtml(html);
 
@@ -53,11 +54,34 @@ namespace ImperialPlugins.Models
                     m_Session = parameters["session_code"];
                     m_Ex = parameters["execution"];
                     m_Tab = parameters["tab_id"];
-
                 }
             }
         }
 
+        public bool HarLogin(string fileName)
+        {
+            using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+            {
+                return HarLogin(fs);
+            }
+        }
+
+        public bool HarLogin(Stream harStream)
+        {
+            var cred = HarAuthManager.ExtractCredentialsFromHAR(harStream);
+
+            if (cred == null)
+            {
+                return false;
+            }
+            return Client.LoginCallback(cred.Value);
+        }
+
+
+        public bool Login(IPSessionCredentials credentials)
+        {
+            return Client.LoginCallback(credentials);
+        }
 
         public bool Login(string APIKey)
         {
@@ -83,7 +107,6 @@ namespace ImperialPlugins.Models
 
             Dictionary<string, string> parameters = Client.URIHelper.GetURLParameters(uri);
             if (parameters.Count < 4) return false;
-
 
             m_sessionState = parameters["session_state"];
 
