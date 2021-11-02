@@ -175,6 +175,16 @@ namespace ImperialPluginsConsole.Commands.Licences
 
             var filtered = Filter(registrations, args);
 
+            var userPad = filtered.GetPadBase(x => x.OwnerName.Length) + 3;
+
+            var dc = new Dictionary<int, IPPlugin?>();
+
+            foreach (var pl in filtered)
+            {
+                dc[pl.ProductID] = m_Cache.GetPlugin(pl.ProductID);
+            }
+            var productPad = dc.GetPadBase(x => x.Value?.Name?.Length ?? 5) + 3;
+
             foreach (var k in filtered)
             {
                 var lcid = k.ID.ToString();
@@ -183,18 +193,18 @@ namespace ImperialPluginsConsole.Commands.Licences
                 cmdOut.Write("]{0}", ConsoleColor.Green, ' '.Pad(lcid.Length, 5));
 
                 cmdOut.Write("User: ", ConsoleColor.Green);
-                cmdOut.Write("{0}", ConsoleColor.Cyan, k.OwnerName.Pad(30));
+                cmdOut.Write("{0}", ConsoleColor.Cyan, k.OwnerName.Pad(userPad));
 
                 cmdOut.Write("Product: ", ConsoleColor.Green);
 
                 var product = m_Cache.GetPlugin(k.ProductID);
                 if (product == null)
                 {
-                    cmdOut.Write("{0}", ConsoleColor.Red, k.ID.ToString().Pad(20));
+                    cmdOut.Write("{0}", ConsoleColor.Red, k.ID.ToString().Pad(productPad));
                 }
                 else
                 {
-                    cmdOut.Write("{0}", ConsoleColor.Cyan, product.Name.Pad(20));
+                    cmdOut.Write("{0}", ConsoleColor.Cyan, product.Name.Pad(productPad));
                 }
 
                 if (showLicence)
@@ -217,10 +227,17 @@ namespace ImperialPluginsConsole.Commands.Licences
                 }
                 cmdOut.WriteLine();
 
+                if (k.ExpireTime != null)
+                {
+                    cmdOut.Write("  Licence Expired: ", ConsoleColor.Yellow);
+                    cmdOut.WriteLine("{0}", ConsoleColor.Cyan, k.ExpireTime.Value.ToShortDateString());
+                }
+
                 if (k.IsBlocked)
                 {
                     cmdOut.Write("  Blocked Reson: ", ConsoleColor.Yellow);
-                    cmdOut.WriteLine("{0}", ConsoleColor.Cyan, k.BlockDisplayReason);
+                    cmdOut.Write("{0}", ConsoleColor.Cyan, k.BlockDisplayReason);
+                    cmdOut.WriteLine();
                 }
                 if (k.RefundTime != null)
                 {

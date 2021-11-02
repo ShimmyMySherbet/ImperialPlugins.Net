@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 
@@ -33,6 +34,11 @@ namespace ImperialPluginsConsole.Models
             {
                 return "No Content";
             }
+        }
+
+        public static int GetPadBase<T>(this IEnumerable<T> e, Func<T, int> func)
+        {
+            return e.Max(func);
         }
 
         public static string Pad(this string input, int padTo)
