@@ -1,4 +1,5 @@
 ﻿using ImperialPluginsConsole.Interfaces;
+using System;
 
 namespace ImperialPluginsConsole.Commands.Products
 {
@@ -12,6 +13,8 @@ namespace ImperialPluginsConsole.Commands.Products
 
         public void Execute(ICommandOut cmdOut)
         {
+            cmdOut.Write("Available Commands: ", ConsoleColor.Green);
+            cmdOut.WriteLine("Update, List", ConsoleColor.Cyan);
         }
     }
 }

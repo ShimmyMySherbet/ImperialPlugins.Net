@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace ImperialPlugins
 {
@@ -239,6 +240,24 @@ namespace ImperialPlugins
             BasicAPIOperation("Products/Files", "POST", f);
         }
 
+        public async Task UpdatePluginAsync(int pluginID, string branch, string version, string changelog, byte[] fileData, string fileName, bool forceUpdate = false)
+        {
+            var f = new FileUpload()
+            {
+                DisplayVersion = version,
+                ForceUpdate = forceUpdate,
+                MarkdownChangelog = changelog,
+                ProductId = pluginID,
+                ProductBranchIdentifier = branch,
+                File = new IPFileData()
+            };
+
+            f.File.FileName = fileName;
+            f.File.Base64 = "data:application/x-zip-compressed;base64," + Convert.ToBase64String(fileData);
+
+            BasicAPIOperation("Products/Files", "POST", f);
+        }
+
         public IPFileData DownloadFile(int fileID, string branch = null) => BasicAPICall<IPFileData>($"Products/Files/Download/{fileID}{(branch != null ? $"?BranchKey={branch}" : "")}");
 
         public IPFileInfo GetFileInfo(int fileID, EChangelogType type, string branch = null) => BasicAPICall<IPFileInfo>($"Products/Files/{fileID}?changelogType={type}{(branch != null ? $"branchKey={branch}" : "")}");
@@ -344,7 +363,82 @@ namespace ImperialPlugins
             }
         }
 
+
+        public async Task BasicAPIOperationAsync<T>(string endpoint, string method, T Payload)
+        {
+            ThrowHelper.ThrowIfNotLoggedIn();
+            EnsureEndpoint(ref endpoint);
+            try
+            {
+                HttpWebRequest request = CreateWebRequest(endpoint, method);
+                string payload;
+                string type;
+                if (Payload is string pl)
+                {
+                    type = "plain/text";
+                    payload = pl;
+                }
+                else
+                {
+                    type = "application/json";
+                    payload = JsonConvert.SerializeObject(Payload);
+                }
+                request.WriteString(payload, type);
+                await request.GetResponseAsync();
+            }
+            catch (WebException wex)
+            {
+                ThrowHelper.ThrowIfIpEx(wex);
+                throw wex;
+            }
+        }
+
         public O BasicAPIOperation<T, O>(string endpoint, string method, T Payload)
+        {
+            ThrowHelper.ThrowIfNotLoggedIn();
+            EnsureEndpoint(ref endpoint);
+
+            try
+            {
+                HttpWebRequest request = CreateWebRequest(endpoint, method);
+                string payload;
+                string type;
+                if (Payload is string pl)
+                {
+                    type = "plain/text";
+                    payload = pl;
+                }
+                else
+                {
+                    type = "application/json";
+                    payload = JsonConvert.SerializeObject(Payload);
+                }
+                request.WriteString(payload, type);
+                string response = request.ReadString(out _);
+
+                if (response is O t)
+                {
+                    return t;
+                }
+                {
+                    O r = JsonConvert.DeserializeObject<O>(response);
+                    if (r is IPObject obj)
+                    {
+                        obj.ImperialPlugins = this;
+                    }
+                    return r;
+                }
+            }
+            catch (WebException ex)
+            {
+                ThrowHelper.ThrowIfIpEx(ex);
+                throw ex;
+            }
+        }
+
+
+
+        public async Task<O> BasicAPIOperationAsync<T, O>(string endpoint, string method, T Payload)
         {
             ThrowHelper.ThrowIfNotLoggedIn();
             EnsureEndpoint(ref endpoint);

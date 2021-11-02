@@ -8,7 +8,7 @@ using System.Linq;
 namespace ImperialPluginsConsole.Commands.Products
 {
     [CommandParent(typeof(ProductsCommand))]
-    public class ListProductsComman : ICommand
+    public class ListProductsCommon : ICommand
     {
         public string Name => "List";
 
@@ -20,7 +20,7 @@ namespace ImperialPluginsConsole.Commands.Products
         private readonly CommandContext m_Context;
         private readonly CacheClient m_Cache;
 
-        public ListProductsComman(ImperialPluginsClient imperialPlugins, CommandContext context, CacheClient cache)
+        public ListProductsCommon(ImperialPluginsClient imperialPlugins, CommandContext context, CacheClient cache)
         {
             m_ImperialPlugins = imperialPlugins;
             m_Context = context;
