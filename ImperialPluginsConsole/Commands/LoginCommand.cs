@@ -5,7 +5,6 @@ using ImperialPluginsConsole.Models;
 using System;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace ImperialPluginsConsole.Commands
 {
@@ -24,7 +23,7 @@ namespace ImperialPluginsConsole.Commands
 
         public string Name => "Login";
 
-        public string Syntax => "Login [(API Key)] | [(Username) (Password)] | [-h (.HAR file path)]";
+        public string Syntax => "[(API Key)] | [(Username) (Password)] | [-h (.HAR file path)]";
 
         public string Description => "Logs into the Imperial Plugins API\nIf no parameters are supplied, saved credentials are used instead.";
 
@@ -32,8 +31,8 @@ namespace ImperialPluginsConsole.Commands
         {
             var cArgs = m_Context.ArgumentParser.WithDependants("h").Parse();
 
-            var basePath = new FileInfo(Assembly.GetExecutingAssembly().Location).Directory;
             string? authPath = null;
+            var basePath = new FileInfo(AppContext.BaseDirectory).Directory;
             if (basePath != null)
             {
                 authPath = Path.Combine(basePath.FullName, "auth");

@@ -16,8 +16,4 @@
     <ProjectReference Include="..\ImperialPlugins.Net\ImperialPlugins.Net.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Commands\Servers\" />
-  </ItemGroup>
-
 </Project>
