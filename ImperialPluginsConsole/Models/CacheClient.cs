@@ -84,6 +84,13 @@ namespace ImperialPluginsConsole.Models
             m_WaitHandle.Activate();
         }
 
+
+        public PluginRegistration? GetRegistration(int ID)
+        {
+            var reg = GetRegistrations(2000);
+            return reg.Items.FirstOrDefault(x => x.ID == ID);
+        }
+
         public EnumerableResponse<PluginRegistration> GetRegistrations(int max = 20, bool refresh = false)
         {
             if (m_Registrations == null)
@@ -152,7 +159,7 @@ namespace ImperialPluginsConsole.Models
                 };
         }
 
-        public IPUser? GetUser(string userID)
+        public IPUser? GetUser(string userHandle)
         {
             if (m_Users == null)
             {
@@ -164,9 +171,8 @@ namespace ImperialPluginsConsole.Models
 
             lock (m_Users)
             {
-                usr = m_Users.Items.FirstOrDefault(x => x.Id == userID);
+                usr = m_Users.Items.FirstOrDefault(x => x.Id == userHandle || x.Email.Equals(userHandle, StringComparison.InvariantCultureIgnoreCase) || x.UserName.Equals(userHandle, StringComparison.InvariantCultureIgnoreCase));
             }
-
             return usr;
         }
 

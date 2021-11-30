@@ -1,5 +1,6 @@
 ﻿using ImperialPlugins;
 using ImperialPluginsConsole.Interfaces;
+using System;
 
 namespace ImperialPluginsConsole.Commands.Customers
 {
@@ -20,12 +21,8 @@ namespace ImperialPluginsConsole.Commands.Customers
 
         public void Execute(ICommandOut cmdOut)
         {
-            var c = m_ImperialPlugins.GetUsers();
-
-            foreach (var m in c.Items)
-            {
-                cmdOut.WriteLine("{0} {1}", m.Id, m.UserName);
-            }
+            cmdOut.Write("Available commands: ", ConsoleColor.Green);
+            cmdOut.WriteLine("List, Servers", ConsoleColor.Yellow);
         }
     }
 }

@@ -184,6 +184,8 @@ namespace ImperialPlugins
 
         public EnumerableResponse<Server> GetCustomerServers() => BasicAPICall<EnumerableResponse<Server>>("/Dashboard​/CustomerServers");
 
+        public EnumerableResponse<ProductInstallation> GetInstallations(string customerID, int max = 100) => BasicAPICall<EnumerableResponse<ProductInstallation>>($"/Products/Installations?CustomerId={WebUtility.UrlEncode(customerID)}&MaxResultCount={max}");
+
         public EnumerableResponse<APIKey> GetAPIKeys() => BasicAPICall<EnumerableResponse<APIKey>>("/ApiKeys");
 
         public APIKey CreateAPIKey(string name)
@@ -459,7 +461,7 @@ namespace ImperialPlugins
                     payload = JsonConvert.SerializeObject(Payload);
                 }
                 request.WriteString(payload, type);
-                string response = request.ReadString(out _);
+                (string response, HttpWebResponse resp) = await request.ReadStringAsync();
 
                 if (response is O t)
                 {

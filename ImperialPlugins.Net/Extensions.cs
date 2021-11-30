@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace ImperialPlugins
@@ -43,8 +44,8 @@ namespace ImperialPlugins
         }
 
         public static HttpWebResponse GetResponseHTTP(this HttpWebRequest req) => (HttpWebResponse)req.GetResponse();
-
         public static async Task<HttpWebResponse> GetResponseHTTPAsync(this HttpWebRequest req) => (HttpWebResponse)await req.GetResponseAsync();
+
 
         public static string ReadString(this HttpWebRequest req, out HttpWebResponse response)
         {
@@ -64,6 +65,28 @@ namespace ImperialPlugins
                     return reader.ReadToEnd();
                 }
             }
+        }
+        public static async Task<(string result, HttpWebResponse response)> ReadStringAsync(this HttpWebRequest req)
+        {
+            HttpWebResponse response;
+            string result;
+            using (MemoryStream reads = new MemoryStream())
+            {
+                response = await req.GetResponseHTTPAsync();
+                using (Stream network = response.GetResponseStream())
+                {
+                    network.CopyTo(reads);
+                    network.Flush();
+                }
+
+                reads.Position = 0;
+
+                using (StreamReader reader = new StreamReader(reads))
+                {
+                    result =  await reader.ReadToEndAsync();
+                }
+            }
+            return (result, response);
         }
     }
 }

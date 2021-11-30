@@ -41,15 +41,16 @@ namespace ImperialPluginsConsole.Models
             return e.Max(func);
         }
 
-        public static string Pad(this string input, int padTo)
+        public static string Pad(this string input, int padTo, int excess = 0)
         {
             var inlen = 0;
             var b = new StringBuilder();
             if (input != null)
             {
-                inlen = input.Length;
+                inlen = input.Length + excess;
                 b.Append(input);
             }
+            else inlen = excess;
 
             var paddingNeeded = padTo - inlen;
 
