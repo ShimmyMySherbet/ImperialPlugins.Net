@@ -11,7 +11,7 @@ namespace ImperialPluginsConsole.Models
 {
     public class CacheClient
     {
-        private readonly ImperialPluginsClient m_ImperialPlugins;
+        protected readonly ImperialPluginsClient m_ImperialPlugins;
 
         private EnumerableResponse<PluginRegistration>? m_Registrations;
         private EnumerableResponse<IPUser>? m_Users;
@@ -24,7 +24,29 @@ namespace ImperialPluginsConsole.Models
             m_ImperialPlugins = imperialPlugins;
         }
 
-        public void StartInit()
+        public virtual void RefreshReg()
+        {
+            ThreadPool.QueueUserWorkItem((_) =>
+            {
+                if (m_Registrations == null)
+                {
+                    m_Registrations = new EnumerableResponse<PluginRegistration>();
+                }
+                lock (m_Registrations)
+                {
+                    try
+                    {
+                        m_Registrations = m_ImperialPlugins.GetRegistrations(100000);
+                        Debug.WriteLine($"Loaded {m_Registrations.TotalCount} registrations");
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            });
+        }
+
+        public virtual void StartInit()
         {
             var regHandle = m_WaitHandle.CreateTask();
             var userHandle = m_WaitHandle.CreateTask();
@@ -84,14 +106,13 @@ namespace ImperialPluginsConsole.Models
             m_WaitHandle.Activate();
         }
 
-
-        public PluginRegistration? GetRegistration(int ID)
+        public virtual PluginRegistration? GetRegistration(int ID)
         {
             var reg = GetRegistrations(2000);
             return reg.Items.FirstOrDefault(x => x.ID == ID);
         }
 
-        public EnumerableResponse<PluginRegistration> GetRegistrations(int max = 20, bool refresh = false)
+        public virtual EnumerableResponse<PluginRegistration> GetRegistrations(int max = 20, bool refresh = false)
         {
             if (m_Registrations == null)
             {
@@ -117,7 +138,7 @@ namespace ImperialPluginsConsole.Models
                 };
         }
 
-        public EnumerableResponse<IPUser> GetUsers(int max = 20)
+        public virtual EnumerableResponse<IPUser> GetUsers(int max = 20)
         {
             if (m_Users == null)
             {
@@ -138,7 +159,7 @@ namespace ImperialPluginsConsole.Models
                 };
         }
 
-        public EnumerableResponse<IPPlugin> GetPlugins(int max = 20)
+        public virtual EnumerableResponse<IPPlugin> GetPlugins(int max = 20)
         {
             if (m_Plugins == null)
             {
@@ -159,7 +180,7 @@ namespace ImperialPluginsConsole.Models
                 };
         }
 
-        public IPUser? GetUser(string userHandle)
+        public virtual IPUser? GetUser(string userHandle)
         {
             if (m_Users == null)
             {
@@ -176,7 +197,7 @@ namespace ImperialPluginsConsole.Models
             return usr;
         }
 
-        public IPPlugin? GetPlugin(int id)
+        public virtual IPPlugin? GetPlugin(int id)
         {
             if (m_Plugins == null)
             {
@@ -194,7 +215,7 @@ namespace ImperialPluginsConsole.Models
             return usr;
         }
 
-        public IPPlugin? GetPluginByName(string name)
+        public virtual IPPlugin? GetPluginByName(string name)
         {
             if (m_Plugins == null)
             {
@@ -212,9 +233,9 @@ namespace ImperialPluginsConsole.Models
             return usr;
         }
 
-        public List<IPPlugin> GetSelfPlugins() => GetMerchantPlugins(m_ImperialPlugins.Self.ID);
+        public virtual List<IPPlugin> GetSelfPlugins() => GetMerchantPlugins(m_ImperialPlugins.Self.ID);
 
-        public List<IPPlugin> GetMerchantPlugins(string merchantID)
+        public virtual List<IPPlugin> GetMerchantPlugins(string merchantID)
         {
             if (m_Plugins == null)
             {

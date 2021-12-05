@@ -2,8 +2,11 @@
 using ImperialPluginsConsole.Interfaces;
 using ImperialPluginsConsole.Models;
 using ImperialPluginsConsole.Models.Attributes;
+using ImperialPluginsConsole.Models.IPLookup;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace ImperialPluginsConsole.Commands.Customers
 {
@@ -12,7 +15,7 @@ namespace ImperialPluginsConsole.Commands.Customers
     {
         public string Name => "Servers";
 
-        public string Syntax => "-c [Customer] -max [max]";
+        public string Syntax => "-c [Customer] -max [max] -i -d [days]";
 
         public string Description => "Lists a customers server registrations";
 
@@ -30,7 +33,8 @@ namespace ImperialPluginsConsole.Commands.Customers
         public void Execute(ICommandOut cmdOut)
         {
             var ctx = m_Context.ArgumentParser
-                .WithDependants("c", "max")
+                .WithDependants("c", "max", "d")
+                .WithIndependants("i")
                 .Parse();
 
             ctx.Enforce("c");
@@ -40,6 +44,11 @@ namespace ImperialPluginsConsole.Commands.Customers
             var maxCount = ctx.GetOrDefault("max", 500);
 
             var user = m_Cache.GetUser(customerHandle);
+
+            var includeIpInfo = ctx.If("i");
+
+            var dayMax = ctx.GetOrDefault("d", 10000);
+
 
             if (user == null)
             {
@@ -57,12 +66,24 @@ namespace ImperialPluginsConsole.Commands.Customers
                 return;
             }
 
-            res.Items = res.Items.OrderByDescending(x => x.lastActivityTime).ToArray();
+            res.Items = res.Items.OrderByDescending(x => x.lastActivityTime).Where(x => DateTime.Now.Subtract(x.lastActivityTime).TotalDays <= dayMax).ToArray();
 
             var hostNames = new string[res.Items.Length];
             var productNames = new string[res.Items.Length];
             var regDates = new string[res.Items.Length];
             var lastSeenDates = new string[res.Items.Length];
+
+            var ipLookups = new Dictionary<string, IPAPIResponse?>();
+            var locPad = 0;
+            var ispPad = 0;
+            var orgPad = 0;
+            if (includeIpInfo)
+            {
+                ipLookups = IPAPI.LookupIP(res.Items.Select(x => x.Host).ToArray());
+                locPad = ipLookups.GetPadBase(x => x.Value != null ? $"{x.Value.regionName}, {x.Value.country}".Length : 0) + 2;
+                ispPad = ipLookups.GetPadBase(x => x.Value != null ? x.Value.Isp.Length : 0) + 2;
+                orgPad = ipLookups.GetPadBase(x => x.Value != null ? x.Value.Org.Length : 0) + 2;
+            }
 
             for (int i = 0; i < res.Items.Length; i++)
             {
@@ -126,8 +147,19 @@ namespace ImperialPluginsConsole.Commands.Customers
 
                 cmdOut.Write("  Seen: ", System.ConsoleColor.Blue);
                 cmdOut.Write(lastSeenDates[i], seenPadTo, ConsoleColor.Cyan);
-             
                 cmdOut.WriteLine();
+
+                if (ipLookups.TryGetValue(server.Host, out var ipInf) && ipInf != null && ipInf.IsSuccess)
+                {
+                    cmdOut.Write("  Location: ", ConsoleColor.Blue);
+                    cmdOut.Write($"{ipInf.regionName}, {ipInf.country}".Pad(locPad), ConsoleColor.Yellow);
+                    cmdOut.Write("  ISP: ", ConsoleColor.Blue);
+                    cmdOut.Write(ipInf.Isp.Pad(ispPad), ConsoleColor.Cyan);
+                    cmdOut.Write("  Org: ", ConsoleColor.Blue);
+                    cmdOut.WriteLine(ipInf.Org.Pad(orgPad), ConsoleColor.Magenta);
+                    cmdOut.WriteLine();
+                }
+
                 cmdOut.WriteLine();
             }
         }

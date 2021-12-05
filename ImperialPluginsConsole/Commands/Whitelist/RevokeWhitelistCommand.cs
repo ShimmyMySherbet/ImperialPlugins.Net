@@ -1,4 +1,5 @@
 ﻿using ImperialPluginsConsole.Interfaces;
+using ImperialPluginsConsole.Models.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,17 +8,18 @@ using System.Threading.Tasks;
 
 namespace ImperialPluginsConsole.Commands.Whitelist
 {
-    public class WhitelistsCommand : ICommand
+    [CommandParent(typeof(WhitelistsCommand))]
+    public class RevokeWhitelistCommand : ICommand
     {
-        public string Name => "Whitelist";
+        public string Name => "Revoke";
 
         public string Syntax => "";
 
-        public string Description => "Manages Whitelist-based DRM";
+        public string Description => "Tools to revoke whitelists";
 
         public void Execute(ICommandOut cmdOut)
         {
-            cmdOut.WriteLine("Available Commands: Server, Revoke");
+            cmdOut.WriteLine($"Available Commands: Server");
         }
     }
 }

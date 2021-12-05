@@ -1,9 +1,10 @@
-﻿using ImperialPlugins;
+﻿using System;
+using System.Linq;
+using ImperialPlugins;
 using ImperialPluginsConsole.Implementations;
 using ImperialPluginsConsole.Interfaces;
 using ImperialPluginsConsole.Models;
 using ImperialPluginsConsole.Servicing;
-using System.Linq;
 
 namespace ImperialPluginsConsole
 {
@@ -11,13 +12,21 @@ namespace ImperialPluginsConsole
     {
         private static void Main(string[] args)
         {
+            var noCache = args.Any(x => x.Equals("-nocache", StringComparison.InvariantCultureIgnoreCase));
+
             var host = new ServiceHost();
 
             host.RegisterSingleton<ICommandService, CommandService>();
             host.RegisterSingleton<ICommandReader, ConsoleCommandReader>();
             host.RegisterSingleton<ImperialPluginsClient>();
-            host.RegisterSingleton<CacheClient>();
-
+            if (noCache)
+            {
+                host.RegisterSingleton<SkipCache>();
+            }
+            else
+            {
+                host.RegisterSingleton<CacheClient>();
+            }
 
             host.RegisterTransient<ICommandOut, CommandOut>();
 

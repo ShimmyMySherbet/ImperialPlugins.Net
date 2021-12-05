@@ -2,7 +2,7 @@
   "profiles": {
     "ImperialPluginsConsole": {
       "commandName": "Project",
-      "commandLineArgs": "+Login"
+      "commandLineArgs": "-NoCache +Login"
     }
   }
 }
