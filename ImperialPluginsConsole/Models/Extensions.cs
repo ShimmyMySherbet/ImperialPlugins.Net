@@ -41,6 +41,8 @@ namespace ImperialPluginsConsole.Models
             return e.Max(func);
         }
 
+        public static bool Check(this string[] args, string key) => args.Any(x => x.Equals(key, StringComparison.InvariantCultureIgnoreCase));
+
         public static string Pad(this string input, int padTo, int excess = 0)
         {
             var inlen = 0;
@@ -84,14 +86,13 @@ namespace ImperialPluginsConsole.Models
             return b.ToString();
         }
 
-
         public static IEnumerable<T> Limit<T>(this IEnumerable<T> inp, int limit)
         {
             var ot = new List<T>();
             var took = 0;
-            using(var e = inp.GetEnumerator())
+            using (var e = inp.GetEnumerator())
             {
-                while(e.MoveNext())
+                while (e.MoveNext())
                 {
                     took++;
                     ot.Add(e.Current);

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using ImperialPlugins;
 using ImperialPluginsConsole.Implementations;
 using ImperialPluginsConsole.Interfaces;
@@ -12,7 +11,8 @@ namespace ImperialPluginsConsole
     {
         private static void Main(string[] args)
         {
-            var noCache = args.Any(x => x.Equals("-nocache", StringComparison.InvariantCultureIgnoreCase));
+            // You can run without cache, but be warned, it will be super slow.
+            var noCache = args.Check("-nocache");
 
             var host = new ServiceHost();
 
