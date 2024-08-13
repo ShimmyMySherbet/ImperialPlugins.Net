@@ -1,4 +1,7 @@
-﻿using ImperialPlugins.Models;
+﻿using System;
+using System.Net;
+using System.Threading.Tasks;
+using ImperialPlugins.Models;
 using ImperialPlugins.Models.API;
 using ImperialPlugins.Models.Coupons;
 using ImperialPlugins.Models.Exceptions;
@@ -12,10 +15,6 @@ using ImperialPlugins.Models.Servers;
 using ImperialPlugins.Models.Service;
 using ImperialPlugins.Models.Users;
 using Newtonsoft.Json;
-using System;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace ImperialPlugins
 {
@@ -33,6 +32,8 @@ namespace ImperialPlugins
 
         public bool IsLoggedIn { get; private set; } = false;
         public IPSessionCredentials SessionCredentials { get; private set; }
+
+        public event AuthenticatedArgs Authenticated;
 
         public ImperialPluginsClient()
         {
@@ -56,6 +57,7 @@ namespace ImperialPlugins
             {
                 IsLoggedIn = true;
                 Session = GetSession();
+                Authenticated?.Invoke(this, credentials);
             }
             catch (WebException)
             {
@@ -72,6 +74,7 @@ namespace ImperialPlugins
                 IsLoggedIn = true;
                 SessionCredentials = credentials;
                 Session = GetSession();
+                Authenticated?.Invoke(this, credentials);
                 return true;
             }
             catch (ImperialPluginsException ex)
@@ -129,14 +132,22 @@ namespace ImperialPlugins
 
         public EnumerableResponse<Coupon> GetCoupons(int max = 5) => BasicAPICall<EnumerableResponse<Coupon>>($"/Coupons?MaxResultCount={max}");
 
+        public async Task<EnumerableResponse<Coupon>> GetCouponsAsync(int max = 5) => await BasicAPICallAsync<EnumerableResponse<Coupon>>($"/Coupons?MaxResultCount={max}");
+
         public PluginCategory GetPluginCategory(int categoryID) => BasicAPICall<PluginCategory>($"/Products/Categories/{categoryID}");
 
         public void CreateCoupon(CouponBuilder coupon) => BasicAPIOperation("Coupons", "POST", coupon);
 
+        public async Task CreateCouponAsync(CouponBuilder coupon) => await BasicAPIOperationAsync("Coupons", "POST", coupon);
+
         [Obsolete]
         public void DeleteCoupon(int couponID) => BasicAPIOperation($"Coupons/{couponID}", "DELETE");
 
+        public async Task DeleteCouponAsync(int couponID) => await BasicAPIOperationAsync($"Coupons/{couponID}", "DELETE");
+
         public Coupon GetCoupon(string couponKey) => BasicAPICall<Coupon>($"Coupons/{couponKey}");
+
+        public async Task<Coupon> GetCouponAsync(string couponKey) => await BasicAPICallAsync<Coupon>($"Coupons/{couponKey}");
 
         public EnumerableResponse<IPFile> GetFiles(int max = 5) => BasicAPICall<EnumerableResponse<IPFile>>($"/Products/Files?MaxResultCount={max}");
 
@@ -198,7 +209,11 @@ namespace ImperialPlugins
 
         public EnumerableResponse<IPPlugin> GetMerchantPlugins(string merchantID, int max = 100) => BasicAPICall<EnumerableResponse<IPPlugin>>($"/Products?MaxResultCount={max}&MerchantIds={WebUtility.UrlEncode(merchantID)}");
 
+        public async Task<EnumerableResponse<IPPlugin>> GetMerchantPluginsAsync(string merchantID, int max = 100) => await BasicAPICallAsync<EnumerableResponse<IPPlugin>>($"/Products?MaxResultCount={max}&MerchantIds={WebUtility.UrlEncode(merchantID)}");
+
         public EnumerableResponse<IPPlugin> GetOwnPlugins(int max = 100) => GetMerchantPlugins(Session.UserID, max);
+
+        public Task<EnumerableResponse<IPPlugin>> GetOwnPluginsAsync(int max = 100) => GetMerchantPluginsAsync(Session.UserID, max);
 
         public APIKey RenameAPIkey(int id, string name)
         {
@@ -320,6 +335,34 @@ namespace ImperialPlugins
             }
         }
 
+        public async Task<T> BasicAPICallAsync<T>(string endpoint)
+        {
+            ThrowHelper.ThrowIfNotLoggedIn();
+            EnsureEndpoint(ref endpoint);
+            try
+            {
+                HttpWebRequest request = CreateWebRequest(endpoint, "GET");
+                (string jsval, HttpWebResponse resp) = await request.ReadStringAsync();
+                if (typeof(T) == typeof(NoReturn)) return default;
+                if (jsval is T c)
+                    return c;
+                else
+                {
+                    T r = JsonConvert.DeserializeObject<T>(jsval);
+                    if (r is IPObject obj)
+                    {
+                        obj.ImperialPlugins = this;
+                    }
+                    return r;
+                }
+            }
+            catch (WebException wex)
+            {
+                ThrowHelper.ThrowIfIpEx(wex);
+                throw wex;
+            }
+        }
+
         public void BasicAPIOperation(string endpoint, string method)
         {
             try
@@ -328,6 +371,22 @@ namespace ImperialPlugins
                 EnsureEndpoint(ref endpoint);
                 HttpWebRequest request = CreateWebRequest(endpoint, method);
                 request.GetResponse();
+            }
+            catch (WebException wex)
+            {
+                ThrowHelper.ThrowIfIpEx(wex);
+                throw wex;
+            }
+        }
+
+        public async Task BasicAPIOperationAsync(string endpoint, string method)
+        {
+            try
+            {
+                ThrowHelper.ThrowIfNotLoggedIn();
+                EnsureEndpoint(ref endpoint);
+                HttpWebRequest request = CreateWebRequest(endpoint, method);
+                await request.GetResponseAsync();
             }
             catch (WebException wex)
             {
@@ -365,7 +424,6 @@ namespace ImperialPlugins
             }
         }
 
-
         public async Task BasicAPIOperationAsync<T>(string endpoint, string method, T Payload)
         {
             ThrowHelper.ThrowIfNotLoggedIn();
@@ -385,7 +443,7 @@ namespace ImperialPlugins
                     type = "application/json";
                     payload = JsonConvert.SerializeObject(Payload);
                 }
-                request.WriteString(payload, type);
+                await request.WriteStringAsync(payload, type);
                 await request.GetResponseAsync();
             }
             catch (WebException wex)
@@ -394,6 +452,35 @@ namespace ImperialPlugins
                 throw wex;
             }
         }
+
+        //public async Task BasicAPIOperationAsync<T>(string endpoint, string method, T Payload)
+        //{
+        //    ThrowHelper.ThrowIfNotLoggedIn();
+        //    EnsureEndpoint(ref endpoint);
+        //    try
+        //    {
+        //        HttpWebRequest request = CreateWebRequest(endpoint, method);
+        //        string payload;
+        //        string type;
+        //        if (Payload is string pl)
+        //        {
+        //            type = "plain/text";
+        //            payload = pl;
+        //        }
+        //        else
+        //        {
+        //            type = "application/json";
+        //            payload = JsonConvert.SerializeObject(Payload);
+        //        }
+        //        request.WriteString(payload, type);
+        //        await request.GetResponseAsync();
+        //    }
+        //    catch (WebException wex)
+        //    {
+        //        ThrowHelper.ThrowIfIpEx(wex);
+        //        throw wex;
+        //    }
+        //}
 
         public O BasicAPIOperation<T, O>(string endpoint, string method, T Payload)
         {
@@ -437,8 +524,6 @@ namespace ImperialPlugins
                 throw ex;
             }
         }
-
-
 
         public async Task<O> BasicAPIOperationAsync<T, O>(string endpoint, string method, T Payload)
         {

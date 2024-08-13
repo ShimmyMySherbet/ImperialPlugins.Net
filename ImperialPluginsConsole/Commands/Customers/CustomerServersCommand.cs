@@ -1,12 +1,13 @@
-﻿using ImperialPlugins;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ImperialPlugins;
+using ImperialPlugins.Models;
+using ImperialPlugins.Models.Servers;
 using ImperialPluginsConsole.Interfaces;
 using ImperialPluginsConsole.Models;
 using ImperialPluginsConsole.Models.Attributes;
 using ImperialPluginsConsole.Models.IPLookup;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace ImperialPluginsConsole.Commands.Customers
 {
@@ -15,7 +16,7 @@ namespace ImperialPluginsConsole.Commands.Customers
     {
         public string Name => "Servers";
 
-        public string Syntax => "-c [Customer] -max [max] -i -d [days]";
+        public string Syntax => "{ -c [Customer] | -ip [Ip] } -p [port] -max [max] -i -d [days]";
 
         public string Description => "Lists a customers server registrations";
 
@@ -33,32 +34,49 @@ namespace ImperialPluginsConsole.Commands.Customers
         public void Execute(ICommandOut cmdOut)
         {
             var ctx = m_Context.ArgumentParser
-                .WithDependants("c", "max", "d")
+                .WithDependants("c", "max", "d", "ip", "p")
                 .WithIndependants("i")
                 .Parse();
 
+            var customer = ctx.GetOrDefault<string?>("c", null);
+            var serverIP = ctx.GetOrDefault<string?>("ip", null);
+            var serverPort = ctx.GetOrDefault<ushort?>("p", null);
+
+            if (customer == null && serverIP == null)
+            {
+                cmdOut.Write("Error: ", ConsoleColor.Red);
+                cmdOut.WriteLine("-c or -ip must be specified.", ConsoleColor.Yellow);
+                return;
+            }
+
             ctx.Enforce("c");
 
-            var customerHandle = ctx["c"];
-
             var maxCount = ctx.GetOrDefault("max", 500);
-
-            var user = m_Cache.GetUser(customerHandle);
 
             var includeIpInfo = ctx.If("i");
 
             var dayMax = ctx.GetOrDefault("d", 10000);
 
+            EnumerableResponse<ProductInstallation> res;
 
-            if (user == null)
+
+            if (customer != null)
             {
-                cmdOut.WriteLine("Failed to find user.");
+                var user = m_Cache.GetUser(customer);
+                if (user == null)
+                {
+                    cmdOut.WriteLine("Failed to find user.");
+                    return;
+                }
+                var customerID = user.Id;
+                res = m_Client.GetInstallations(customerID, maxCount);
+
+            } else
+            {
                 return;
             }
 
-            var customerID = user.Id;
 
-            var res = m_Client.GetInstallations(customerID, maxCount);
 
             if (res.TotalCount == 0)
             {
@@ -80,6 +98,7 @@ namespace ImperialPluginsConsole.Commands.Customers
             if (includeIpInfo)
             {
                 ipLookups = IPAPI.LookupIP(res.Items.Select(x => x.Host).ToArray());
+
                 locPad = ipLookups.GetPadBase(x => x.Value != null ? $"{x.Value.regionName}, {x.Value.country}".Length : 0) + 2;
                 ispPad = ipLookups.GetPadBase(x => x.Value != null ? x.Value.Isp.Length : 0) + 2;
                 orgPad = ipLookups.GetPadBase(x => x.Value != null ? x.Value.Org.Length : 0) + 2;
@@ -116,6 +135,13 @@ namespace ImperialPluginsConsole.Commands.Customers
             var namePad = res.Items.GetPadBase(x => x.serverName.Length) + 2;
             var hostPad = hostNames.GetPadBase(x => x.Length) + 2;
             cmdOut.WriteLine();
+
+            if (res.Items.Length == 0)
+            {
+                cmdOut.WriteLine("No servers matching search criteria", ConsoleColor.Red);
+                cmdOut.WriteLine();
+            }
+
             for (int i = 0; i < res.Items.Length; i++)
             {
                 var server = res.Items[i];
@@ -156,8 +182,19 @@ namespace ImperialPluginsConsole.Commands.Customers
                     cmdOut.Write("  ISP: ", ConsoleColor.Blue);
                     cmdOut.Write(ipInf.Isp.Pad(ispPad), ConsoleColor.Cyan);
                     cmdOut.Write("  Org: ", ConsoleColor.Blue);
-                    cmdOut.WriteLine(ipInf.Org.Pad(orgPad), ConsoleColor.Magenta);
-                    cmdOut.WriteLine();
+
+                    var reseller = HosterOverrides.GetResellerName(server.Host);
+                    if (reseller != null)
+                    {
+                        cmdOut.Write(reseller, ConsoleColor.Yellow);
+                        cmdOut.Write(" via ", ConsoleColor.Blue);
+                        cmdOut.WriteLine(ipInf.Org, ConsoleColor.Magenta);
+                    }
+                    else
+                    {
+                        cmdOut.WriteLine(ipInf.Org.Pad(orgPad), ConsoleColor.Yellow);
+                        cmdOut.WriteLine();
+                    }
                 }
 
                 cmdOut.WriteLine();

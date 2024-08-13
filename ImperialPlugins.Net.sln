@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImperialPlugins.Net", "Impe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImperialPluginsConsole", "ImperialPluginsConsole\ImperialPluginsConsole.csproj", "{9C4BE98E-D8A0-471A-A3D0-D260BF6D6267}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImperialDash", "ImperialDash\ImperialDash.csproj", "{7C1206C0-4873-4383-BB00-6FBAC4525684}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{9C4BE98E-D8A0-471A-A3D0-D260BF6D6267}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C4BE98E-D8A0-471A-A3D0-D260BF6D6267}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C4BE98E-D8A0-471A-A3D0-D260BF6D6267}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C1206C0-4873-4383-BB00-6FBAC4525684}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C1206C0-4873-4383-BB00-6FBAC4525684}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C1206C0-4873-4383-BB00-6FBAC4525684}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C1206C0-4873-4383-BB00-6FBAC4525684}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

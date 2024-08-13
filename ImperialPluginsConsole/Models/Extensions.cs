@@ -38,7 +38,18 @@ namespace ImperialPluginsConsole.Models
 
         public static int GetPadBase<T>(this IEnumerable<T> e, Func<T, int> func)
         {
-            return e.Max(func);
+            int mx = -1;
+
+            using (var en = e.GetEnumerator())
+            {
+                while (en.MoveNext())
+                {
+                    var v = func(en.Current);
+                    if (v > mx)
+                        mx = v;
+                }
+            }
+            return mx;
         }
 
         public static bool Check(this string[] args, string key) => args.Any(x => x.Equals(key, StringComparison.InvariantCultureIgnoreCase));
