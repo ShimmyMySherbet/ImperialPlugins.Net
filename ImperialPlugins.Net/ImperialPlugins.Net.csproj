@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net48;net5</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net48;net5;net8</TargetFrameworks>
     <RootNamespace>ImperialPlugins</RootNamespace>
     <Version>1.1.0</Version>
+    <LangVersion>12</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

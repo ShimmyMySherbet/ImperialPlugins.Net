@@ -24,11 +24,9 @@ namespace ImperialPluginsConsole.Models
             }
             try
             {
-                using (var network = r.GetResponseStream())
-                using (var reader = new StreamReader(network))
-                {
-                    return reader.ReadToEnd();
-                }
+                using var network = r.GetResponseStream();
+                using var reader = new StreamReader(network);
+                return reader.ReadToEnd();
             }
             catch (Exception)
             {
@@ -52,7 +50,10 @@ namespace ImperialPluginsConsole.Models
             return mx;
         }
 
-        public static bool Check(this string[] args, string key) => args.Any(x => x.Equals(key, StringComparison.InvariantCultureIgnoreCase));
+        public static bool Check(this string[] args, string key)
+        {
+            return args.Any(x => x.Equals(key, StringComparison.InvariantCultureIgnoreCase));
+        }
 
         public static string Pad(this string input, int padTo, int excess = 0)
         {
@@ -114,6 +115,38 @@ namespace ImperialPluginsConsole.Models
                 }
             }
             return ot;
+        }
+
+        /// <summary>
+        /// Represents a mapping function, that takes a value as an input, returning an object in <see langword="out"/> field when returning true
+        /// </summary>
+        /// <typeparam name="I">Input type</typeparam>
+        /// <typeparam name="O">Output argument type</typeparam>
+        /// <param name="input">Input value</param>
+        /// <param name="output">Output value</param>
+        /// <returns>True if the conversion was successful, and <paramref name="output"/> was set</returns>
+        public delegate bool MappingFunction<I, O>(I input, out O? output);
+
+        /// <summary>
+        /// Applies a mapping function over an enumerable, yielding the output of the mapping function when it returns true
+        /// </summary>
+        /// <remarks>
+        /// Like a mix between Select and Where
+        /// </remarks>
+        /// <typeparam name="I">Input argument type</typeparam>
+        /// <typeparam name="O">Output argument type</typeparam>
+        /// <param name="values">Input values to enumerate over</param>
+        /// <param name="mapper">Mapping function to apply to input values</param>
+        /// <returns></returns>
+        public static IEnumerable<O> Map<I, O>(this IEnumerable<I> values, MappingFunction<I, O> mapper)
+        {
+            foreach (var value in values)
+            {
+                if (mapper(value, out var output) && output != null)
+                {
+                    yield return output;
+                }
+            }
         }
     }
 }

@@ -1,12 +1,9 @@
-﻿using ImperialPluginsConsole.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using ImperialPluginsConsole.Interfaces;
 
 namespace ImperialPluginsConsole.Commands.Coupons
 {
+
     public class CouponCommand : ICommand
     {
         public string Name => "Coupons";
@@ -17,7 +14,8 @@ namespace ImperialPluginsConsole.Commands.Coupons
 
         public void Execute(ICommandOut cmdOut)
         {
-            throw new NotImplementedException();
+            cmdOut.Write("Available commands: ", ConsoleColor.Green);
+            cmdOut.WriteLine("List, Create, Delete", ConsoleColor.Yellow);
         }
     }
 }
