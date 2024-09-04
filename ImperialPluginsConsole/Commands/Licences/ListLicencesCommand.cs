@@ -175,7 +175,7 @@ namespace ImperialPluginsConsole.Commands.Licences
 
             var filtered = Filter(registrations, args);
 
-            var userPad = filtered.GetPadBase(x => x.OwnerName.Length) + 3;
+            var userPad = filtered.GetPadBase(x => x.OwnerName?.Length ?? 0) + 3;
 
             var dc = new Dictionary<int, IPPlugin?>();
 
@@ -193,7 +193,14 @@ namespace ImperialPluginsConsole.Commands.Licences
                 cmdOut.Write("]{0}", ConsoleColor.Green, ' '.Pad(lcid.Length, 5));
 
                 cmdOut.Write("User: ", ConsoleColor.Green);
-                cmdOut.Write("{0}", ConsoleColor.Cyan, k.OwnerName.Pad(userPad));
+                if (k.OwnerName != null)
+                {
+                    cmdOut.Write("{0}", ConsoleColor.Cyan, k.OwnerName.Pad(userPad));
+                } else
+                {
+                    cmdOut.Write("{0}", ConsoleColor.Red, "NULL".Pad(userPad));
+
+                }
 
                 cmdOut.Write("Product: ", ConsoleColor.Green);
 
