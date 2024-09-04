@@ -39,9 +39,6 @@ namespace ImperialPluginsConsole.Commands.Coupons
                 cmdOut.Write("[", ConsoleColor.Yellow);
                 cmdOut.Write("Coupon ID", ConsoleColor.Cyan);
                 cmdOut.WriteLine("]", ConsoleColor.Yellow);
-
-
-
                 return;
             }
 
